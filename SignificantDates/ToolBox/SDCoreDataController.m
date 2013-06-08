@@ -23,7 +23,8 @@
 @synthesize managedObjectModel = _managedObjectModel;
 @synthesize persistentStoreCoordinator = _persistentStoreCoordinator;
 
-+ (id)sharedInstance {
++ (id)sharedInstance
+{
     static dispatch_once_t once;
     static SDCoreDataController *sharedInstance;
     dispatch_once(&once, ^{
@@ -36,8 +37,10 @@
 #pragma mark - Core Data stack
 
 // Used to propegate saves to the persistent store (disk) without blocking the UI
-- (NSManagedObjectContext *)masterManagedObjectContext {
-    if (_masterManagedObjectContext != nil) {
+- (NSManagedObjectContext *)masterManagedObjectContext
+{
+    if (_masterManagedObjectContext != nil)
+    {
         return _masterManagedObjectContext;
     }
     
@@ -53,16 +56,19 @@
 }
 
 // Return the NSManagedObjectContext to be used in the background during sync
-- (NSManagedObjectContext *)backgroundManagedObjectContext {
-    if (_backgroundManagedObjectContext != nil) {
+- (NSManagedObjectContext *)backgroundManagedObjectContext
+{
+    if (_backgroundManagedObjectContext != nil)
+    {
         return _backgroundManagedObjectContext;
     }
     
     NSManagedObjectContext *masterContext = [self masterManagedObjectContext];
-    if (masterContext != nil) {
+    if (masterContext != nil)
+    {
         _backgroundManagedObjectContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
         [_backgroundManagedObjectContext performBlockAndWait:^{
-            [_backgroundManagedObjectContext setParentContext:masterContext]; 
+            [_backgroundManagedObjectContext setParentContext:masterContext];
         }];
     }
     
@@ -70,36 +76,41 @@
 }
 
 // Return the NSManagedObjectContext to be used in the background during sync
-- (NSManagedObjectContext *)newManagedObjectContext {
+- (NSManagedObjectContext *)newManagedObjectContext
+{
     NSManagedObjectContext *newContext = nil;
     NSManagedObjectContext *masterContext = [self masterManagedObjectContext];
-    if (masterContext != nil) {
+    if (masterContext != nil)
+    {
         newContext = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
         [newContext performBlockAndWait:^{
-            [newContext setParentContext:masterContext]; 
+            [newContext setParentContext:masterContext];
         }];
     }
     
     return newContext;
 }
 
-- (void)saveMasterContext {
+- (void)saveMasterContext
+{
     [self.masterManagedObjectContext performBlockAndWait:^{
         NSError *error = nil;
         BOOL saved = [self.masterManagedObjectContext save:&error];
-        if (!saved) {
-            // do some real error handling 
+        if (!saved)
+        {
+            // do some real error handling
             NSLog(@"Could not save master context due to %@", error);
         }
     }];
 }
 
-- (void)saveBackgroundContext {
+- (void)saveBackgroundContext
+{
     [self.backgroundManagedObjectContext performBlockAndWait:^{
         NSError *error = nil;
         BOOL saved = [self.backgroundManagedObjectContext save:&error];
         if (!saved) {
-            // do some real error handling 
+            // do some real error handling
             NSLog(@"Could not save background context due to %@", error);
         }
     }];
@@ -109,7 +120,8 @@
 // If the model doesn't already exist, it is created from the application's model.
 - (NSManagedObjectModel *)managedObjectModel
 {
-    if (_managedObjectModel != nil) {
+    if (_managedObjectModel != nil)
+    {
         return _managedObjectModel;
     }
     NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"SignificantDates" withExtension:@"momd"];
@@ -121,7 +133,8 @@
 // If the coordinator doesn't already exist, it is created and the application's store added to it.
 - (NSPersistentStoreCoordinator *)persistentStoreCoordinator
 {
-    if (_persistentStoreCoordinator != nil) {
+    if (_persistentStoreCoordinator != nil)
+    {
         return _persistentStoreCoordinator;
     }
     
@@ -129,11 +142,12 @@
     
     NSError *error = nil;
     _persistentStoreCoordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:[self managedObjectModel]];
-    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error]) {
+    if (![_persistentStoreCoordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:nil error:&error])
+    {
         /*
          Replace this implementation with code to handle the error appropriately.
          
-         abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development. 
+         abort() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
          
          Typical reasons for an error here include:
          * The persistent store is not accessible;
@@ -147,7 +161,7 @@
          * Simply deleting the existing store:
          [[NSFileManager defaultManager] removeItemAtURL:storeURL error:nil]
          
-         * Performing automatic lightweight migration by passing the following dictionary as the options parameter: 
+         * Performing automatic lightweight migration by passing the following dictionary as the options parameter:
          [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES], NSMigratePersistentStoresAutomaticallyOption, [NSNumber numberWithBool:YES], NSInferMappingModelAutomaticallyOption, nil];
          
          Lightweight migration will only work for a limited set of schema changes; consult "Core Data Model Versioning and Data Migration Programming Guide" for details.
@@ -155,7 +169,7 @@
          */
         NSLog(@"Unresolved error %@, %@", error, [error userInfo]);
         abort();
-    }    
+    }
     
     return _persistentStoreCoordinator;
 }
@@ -167,6 +181,5 @@
 {
     return [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] lastObject];
 }
-
 
 @end
